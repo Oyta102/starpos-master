@@ -1,0 +1,17 @@
+{
+    "name": "oyta/starpos",
+    "description": "新大陆支付PHP-SDK",
+    "autoload": {
+        "psr-4": {
+            "Oyta\\Starpos\\": "src/"
+        }
+    },
+	"license": "MIT",
+    "authors": [
+        {
+            "name": "oytaer",
+            "email": "oyta@daucn.com"
+        }
+    ],
+    "require": {}
+}
