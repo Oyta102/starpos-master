@@ -1,5 +1,11 @@
 # 新大陆支付 PHP插件
 
+## 插件安装
+
+~~~
+composer require oyta/starpos
+~~~
+
 ## 插件引入
 
 ~~~
