@@ -114,9 +114,10 @@ class Charge
     public function strToUtf8($str){
         $encode = mb_detect_encoding($str, array("ASCII",'UTF-8',"GB2312","GBK",'BIG5'));
         if($encode == 'UTF-8'){
-            return $str;
+            $res = $str;
         }else{
-            return mb_convert_encoding($str, 'UTF-8', $encode);
+            $res = mb_convert_encoding($str, 'UTF-8', $encode);
         }
+        return json_decode(urldecode($res),true);
     }
 }
