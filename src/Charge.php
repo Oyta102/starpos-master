@@ -14,19 +14,23 @@ class Charge
 {
     public $MchId = ''; //商户号
     public $TrmNo = ''; //设备号
-    public $OrgNo = '45987'; //机构号
+    public $OrgNo = ''; //机构号 *必须设置
     public $Key = ''; //密钥
     public $Url = 'http://gateway.starpos.com.cn/adpweb/ehpspos3';
     // http://139.196.77.69:8280/adpweb/ehpspos3
     // http://gateway.starpos.com.cn/adpweb/ehpspos3
-    
+
     public function setconfig($mchid,$trmno,$key)
     {
         $this->MchId = $mchid;
         $this->TrmNo = $trmno;
         $this->Key = $key;
     }
-    
+
+
+    /**
+     * 公共请求参数
+     **/
     public function common()
     {
         $data = [
@@ -42,10 +46,10 @@ class Charge
         ];
         return $data;
     }
-    
+
     /**
      * 商户主扫
-    **/
+     **/
     public function merchantscan($param)
     {
         $data = $this->common(); //公共参数
@@ -53,7 +57,7 @@ class Charge
         $data['total_amount'] = $param['amount']; //订单总金额 以分为单位，如1元表示为100
         $data['authCode'] = $param['authCode']; //扫码支付授权码，设备读取用户微信或支付宝中的条码或者二维码信息
         $data['payChannel'] = $param['payChannel']; //支付渠道 支付宝 ALIPAY  微信 WXPAY 银联 YLPAY
-        $data['subject'] = $param['subject']; //订单标题
+        $data['subject'] = '台牌支付交易号'.$this->TrmNo.date('Ym'); //订单标题
         $data['selOrderNo'] = $param['selOrderNo']; //订单号
         ksort($data); //对键升序排序
         $data['signValue'] = Sign::set($data,$this->Key); //签名
@@ -61,7 +65,7 @@ class Charge
         $res = Respone::http_post($this->Url.'/sdkBarcodePay.json',$json,null);
         return $this->strToUtf8($res);
     }
-    
+
     /**
      * 客户主扫
      **/
@@ -70,8 +74,8 @@ class Charge
         $data = $this->common(); //公共参数
         $data['amount'] = $param['amount']; //实付金额 以分为单位，如1元表示为100
         $data['total_amount'] = $param['amount']; //订单总金额 以分为单位，如1元表示为100
-        $data['payChannel'] = $param['payChannel']; //支付渠道 支付宝 ALIPAY  微信 WXPAY 银联 YLPAY
-        $data['subject'] = $param['subject']; //订单标题
+        $data['payChannel'] = $param['payChannel']; //支付渠道 支付宝 ALIPAY 银联 YLPAY
+        $data['subject'] = '台牌支付交易号'.$this->TrmNo.date('Ym'); //订单标题
         $data['selOrderNo'] = $param['selOrderNo']; //订单号
         ksort($data); //对键升序排序
         $data['signValue'] = Sign::set($data,$this->Key); //签名
@@ -79,7 +83,106 @@ class Charge
         $res = Respone::http_post($this->Url.'/sdkBarcodePosPay.json',$json,null);
         return $this->strToUtf8($res);
     }
-    
+
+
+    /**
+     * 微信公众号小程序
+     **/
+    public function wechatpay($param)
+    {
+        $data = [
+            'orgNo'=> $this->OrgNo,
+            'mercId'=>$this->MchId,
+            'trmNo'=> $this->TrmNo,
+            'tradeNo'=>date('YmdHis').rand(100000,999999),
+            'txnTime'=>date('YmdHis'),
+            'version'=>'V1.0.0',
+            'subject'=>'台牌支付交易号'.$this->TrmNo.date('Ym'),
+            'selOrderNo'=>$param['selOrderNo'],
+            'amount'=>$param['amount'],
+            'total_amount'=>$param['amount'],
+            'txnappid'=>$param['appid'],
+            'openid'=>$param['openid']
+        ];
+        ksort($data); //对键升序排序
+        $data['signValue'] = Sign::set($data,$this->Key); //签名
+        $json = json_encode($data); //转换为json数据
+        $res = Respone::http_post($this->Url.'/pubSigPay.json',$json,null);
+        return $this->strToUtf8($res);
+    }
+
+
+    /**
+     * 公众号查询
+     **/
+    public function wechatquery()
+    {
+        $data = [
+            'orgNo'=> $this->OrgNo,
+            'mercId'=>$this->MchId,
+            'trmNo'=> $this->TrmNo,
+            'txnTime'=>date('YmdHis'),
+            'signType'=>'MD5',
+            'version'=>'V1.0.0',
+        ];
+        ksort($data); //对键升序排序
+        $data['signValue'] = Sign::set($data,$this->Key); //签名
+        $json = json_encode($data); //转换为json数据
+        $res = Respone::http_post($this->Url.'/pubSigQry.json',$json,null);
+        return $this->strToUtf8($res);
+    }
+
+
+
+    /**
+     * 授权码查询openid
+     **/
+    public function wechatopenid($param)
+    {
+        $data = [
+            'mercId'=>$this->MchId,
+            'trmNo'=> $this->TrmNo,
+            'tradeNo'=>date('YmdHis').rand(100000,999999),
+            'txnTime'=>date('YmdHis'),
+            'subAppid'=>$param['subAppid'],  //子商户公众号
+            'userData'=>$param['userData'],  //授权码
+            'signType'=>'MD5',
+            'version'=>'V1.0.0',
+        ];
+        ksort($data); //对键升序排序
+        $data['signValue'] = Sign::set($data,$this->Key); //签名
+        $json = json_encode($data); //转换为json数据
+        $res = Respone::http_post($this->Url.'/qryAuthorizationcode.json',$json,null);
+        return $this->strToUtf8($res);
+    }
+
+
+    /**
+     * 支付宝支付
+     **/
+    public function alipay($param)
+    {
+        $data = [
+            'orgNo'=> $this->OrgNo,
+            'mercId'=>$this->MchId,
+            'trmNo'=> $this->TrmNo,
+            'tradeNo'=>date('YmdHis').rand(100000,999999),
+            'txnTime'=>date('YmdHis'),
+            'version'=>'V1.0.0',
+            'subAppid'=>'台牌支付交易号'.$this->TrmNo.date('Ym'),
+            'selOrderNo'=>$param['selOrderNo'],
+            'amount'=>$param['amount'],
+            'total_amount'=>$param['amount'],
+            'ali_user_id'=>$param['userid'],
+        ];
+        ksort($data); //对键升序排序
+        $data['signValue'] = Sign::set($data,$this->Key); //签名
+        $json = json_encode($data); //转换为json数据
+        $res = Respone::http_post($this->Url.'/aliServicePay.json',$json,null);
+        return $this->strToUtf8($res);
+    }
+
+
     /**
      * 订单查询
      **/
@@ -93,7 +196,7 @@ class Charge
         $res = Respone::http_post($this->Url.'/sdkQryBarcodePay.json',$json,null);
         return $this->strToUtf8($res);
     }
-    
+
     /**
      * 退款
      **/
@@ -107,7 +210,7 @@ class Charge
         $res = Respone::http_post($this->Url.'/sdkRefundBarcodePay.json',$json,null);
         return $this->strToUtf8($res);
     }
-    
+
     /**
      * gbk转utf-8
      **/
