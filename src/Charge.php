@@ -158,7 +158,7 @@ class Charge
 
 
     /**
-     * 支付宝支付
+     * 支付宝服务窗支付
      **/
     public function alipay($param)
     {
