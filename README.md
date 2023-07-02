@@ -59,7 +59,8 @@ $charge->wechatquery();
 $data = [
     'amount'=>'',   //订单金额 以分为单位，如1元表示为100
     'appid'=>'',     //微信公众号APPID
-    'openid'=>''    //公众号openid
+    'openid'=>'',    //公众号openid
+    'selOrderNo'=>'', //订单号
 ];
 return $charge->wechatpay($data);
 ~~~
@@ -69,7 +70,8 @@ return $charge->wechatpay($data);
 ~~~
 $data = [
     'amount'=>'',   //订单金额 以分为单位，如1元表示为100
-    'userid'=>''    //支付宝userid
+    'userid'=>'',    //支付宝userid
+    'selOrderNo'=>'', //订单号
 ];
 return $charge->alipay($data);
 ~~~
