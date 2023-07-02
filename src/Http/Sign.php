@@ -12,7 +12,6 @@ class Sign
 {
     public static function set($data,$key)
     {
-        //ksort($data);
         $str =  implode("",$data);
         return md5($str.$key);
     }

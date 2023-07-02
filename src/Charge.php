@@ -123,7 +123,7 @@ class Charge
             'trmNo'=> $this->TrmNo,
             'txnTime'=>date('YmdHis'),
             'signType'=>'MD5',
-            'version'=>'V1.0.0',
+            'version'=>'V1.0.0'
         ];
         ksort($data); //对键升序排序
         $data['signValue'] = Sign::set($data,$this->Key); //签名
@@ -169,7 +169,7 @@ class Charge
             'tradeNo'=>date('YmdHis').rand(100000,999999),
             'txnTime'=>date('YmdHis'),
             'version'=>'V1.0.0',
-            'subAppid'=>'台牌支付交易号'.$this->TrmNo.date('Ym'),
+            'subject'=>'台牌支付交易号'.$this->TrmNo.date('Ym'),
             'selOrderNo'=>$param['selOrderNo'],
             'amount'=>$param['amount'],
             'total_amount'=>$param['amount'],
